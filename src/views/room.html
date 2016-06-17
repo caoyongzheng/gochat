@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>ChatRoom</title>
+        <style media="screen">
+            *{
+                margin: 0;
+                padding: 0;
+            }
+            .header{
+                position: relative;
+                width: 100%;
+                height: 50px;
+                background-color: #2c2c2c;
+            }
+            .item{
+                float: left;
+                display: block;
+                height: 50px;
+                margin-left: 20px;
+                font-size: 20px;
+                font-weight: 200;
+                line-height: 50px;
+                color: #ffffff;
+            }
+            .stage{
+                position: relative;
+                width: 100%;
+            }
+            .content{
+                width: 80%;
+                height: 500px;
+                position: absolute;
+                left: 0;
+                top: 0;
+                overflow: auto;
+            }
+            .userList{
+                width: 20%;
+                position: absolute;
+                left: 80%;
+                top: 0;
+                height: 500px;
+                overflow: auto;
+            }
+            .postStage{
+                width: 100%;
+                position: absolute;
+                top:500px;
+                height: 200px;
+                width: 100%;
+                left: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <header class="header">
+            <a class="item" href="/">
+                Go Chat
+            </a>
+        </header>
+        <div class="stage">
+            <div class="content"></div>
+            <div class="userList"></div>
+            <div class="postStage"></div>
+        </div>
+        <script type="text/javascript">
+            (function(){
+                var conn
+                if (window["WebSocket"]) {
+                    conn = new WebSocket("ws://{{.WebSocketHost}}/chat?email={{.Email}}")
+                    conn.onopen = function() {
+                        console.log('Connection Started');
+                    }
+
+                    conn.onmessage = function(evt) {
+                        var data = JSON.parse(evt.data);
+                        console.log(evt)
+                    }
+                    conn.onerror = function() {
+                        console.log('An error just occured.')
+    				}
+                    conn.onclose = function() {
+    			  		console.log('Connection closed.')
+    				}
+                }else {
+                    console.log('Your browser does not support WebSockets.')
+                }
+            }())
+        </script>
+    </body>
+</html>

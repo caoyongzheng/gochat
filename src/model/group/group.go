@@ -7,7 +7,10 @@ import (
 )
 
 //Message 消息
-type Message string
+type Message struct {
+	Kind    string      `json:"kind"`
+	Content interface{} `json:"content"`
+}
 
 //MemberInfo 成员信息
 type MemberInfo struct {
@@ -35,9 +38,15 @@ func (m *Member) SendToClient() {
 //ReceiveFromClient 接受来自客户端的消息
 func (m *Member) ReceiveFromClient() {
 	for {
-		var message Message
-		err := websocket.Message.Receive(m.Connection, &message)
+		var content string
+		err := websocket.Message.Receive(m.Connection, &content)
 		// If user closes or refreshes the browser, a err will occur
+		if err != nil {
+			log.Print(err)
+			return
+		}
+		var message Message
+		err = json.Unmarshal([]byte(content), &message)
 		if err != nil {
 			return
 		}
@@ -104,5 +113,6 @@ func (g *Group) BroadcastMemberInfos() {
 		memberInfos = append(memberInfos, v.MemberInfo)
 	}
 	b, _ := json.Marshal(memberInfos)
-	g.Broadcast <- Message(b)
+
+	g.Broadcast <- Message{Kind: "Members", Content: string(b)}
 }

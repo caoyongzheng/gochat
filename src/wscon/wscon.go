@@ -10,7 +10,7 @@ var ActiveGroup *group.Group
 
 //BuildConnection 建立连接
 func BuildConnection(ws *websocket.Conn) {
-	email := ws.Request().URL.Query().Get("email")
+	email := ws.Request().URL.Query().Get("id")
 	if email == "" {
 		ws.Close()
 		return

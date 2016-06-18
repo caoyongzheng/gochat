@@ -2,47 +2,29 @@ package wscon
 
 import (
 	"code.google.com/p/go.net/websocket"
-	"model/group"
+	"global"
+	"model"
+	"service"
 )
-
-//ActiveGroup 当前活动群
-var ActiveGroup *group.Group
 
 //BuildConnection 建立连接
 func BuildConnection(ws *websocket.Conn) {
-	email := ws.Request().URL.Query().Get("id")
-	if email == "" {
-		ws.Close()
-		return
-	}
-	if _, ok := ActiveGroup.Members[email]; ok {
+	id := ws.Request().URL.Query().Get("id")
+	if id == "" {
 		ws.Close()
 		return
 	}
 
-	member := &group.Member{
-		MemberInfo: group.MemberInfo{
-			ID: email,
-		},
-		Group:      ActiveGroup,
-		Connection: ws,
-		Send:       make(chan group.Message, 256),
+	if _, ok := global.ActiveMembers[id]; ok {
+		websocket.JSON.Send(ws, model.Message{Kind: "error", Content: "Id is already exist"})
+		ws.Close()
+		return
 	}
 
-	ActiveGroup.Members[email] = member
-	ActiveGroup.BroadcastMemberInfos()
+	member := model.NewMember(id, ws)
 
-	go member.SendToClient()
-	member.ReceiveFromClient()
-	ActiveGroup.DeleteMember(email)
-}
+	global.AddMember(member)
 
-//InitActiveGroup 初始化房间
-func InitActiveGroup() {
-	ActiveGroup = &group.Group{
-		Members:   make(map[string]*group.Member),
-		Broadcast: make(chan group.Message),
-		CloseSign: make(chan bool),
-	}
-	go ActiveGroup.Start()
+	go service.PushMessageToClient(member)
+	service.HandleMessageFromClient(member)
 }

@@ -34,7 +34,7 @@ func ReceiveMessageFromClient(member *model.Member) {
 			HandleMemberOffLine(member)
 			return
 		}
-
+		message.MemberInfo = member.MemberInfo
 		handleMessageFromClient(message, member)
 	}
 }

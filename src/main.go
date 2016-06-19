@@ -7,8 +7,7 @@ import (
 )
 
 func main() {
-	http.Handle("/chat", websocket.Handler(wscon.BuildConnection))
-	wscon.InitActiveGroup()
+	http.Handle("/", websocket.Handler(wscon.BuildConnection))
 	err := http.ListenAndServe(":5050", nil)
 	if err != nil {
 		panic("ListenAndServe: " + err.Error())

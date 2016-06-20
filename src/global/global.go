@@ -48,9 +48,9 @@ func GetAndAddGroupTree(path string) (*model.GroupTree, error) {
 	return group, nil
 }
 
-//AddMember 添加新成员
-func AddMember(member *model.Member) {
+//AddConnection 添加新成员
+func AddConnection(connection *model.Connection) {
 	defer Mu.Unlock()
 	Mu.Lock()
-	ActiveGroupTree.Members[member.ID] = member
+	ActiveGroupTree.Connections[connection.ID] = connection
 }

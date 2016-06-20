@@ -17,15 +17,16 @@ func BuildConnection(ws *websocket.Conn) {
 		return
 	}
 
-	if _, ok := global.ActiveGroupTree.Members[id]; ok {
+	if _, ok := global.ActiveGroupTree.Connections[id]; ok {
 		websocket.JSON.Send(ws, model.NewErrorMessage("system", "Error", "Id:"+id+" is already exist", global.System))
 		ws.Close()
 		return
 	}
+	connection := model.NewConnection(id, ws, global.ActiveGroupTree)
 
-	member := model.NewMember(id, ws, global.ActiveGroupTree)
-	global.AddMember(member)
-	log.Printf("Member %s is online", id)
-	go service.SendMessageToClient(member)
-	service.ReceiveMessageFromClient(member)
+	global.AddConnection(connection)
+	log.Printf("Connection %s is online", id)
+
+	go service.SendMessageToClient(connection)
+	service.ReceiveMessageFromClient(connection)
 }

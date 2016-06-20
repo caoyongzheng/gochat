@@ -15,16 +15,16 @@ type Message struct {
 	Kind     string      `json:"kind"`     //消息类型
 	DataName string      `json:"dataName"` //数据名称
 	Content  interface{} `json:"content"`  //消息类容
-	MemberInfo
+	Member
 }
 
 //NewErrorMessage 创建一个异常消息
-func NewErrorMessage(path string, dataName string, content interface{}, m MemberInfo) Message {
+func NewErrorMessage(path string, dataName string, content interface{}, m Member) Message {
 	return Message{
-		Path:       path,
-		Kind:       Error,
-		DataName:   dataName,
-		Content:    content,
-		MemberInfo: m,
+		Path:     path,
+		Kind:     Error,
+		DataName: dataName,
+		Content:  content,
+		Member:   m,
 	}
 }

@@ -2,25 +2,25 @@ package model
 
 //GroupTree 群组树
 type GroupTree struct {
-	Name       string                //名字
-	Path       string                //路径
-	GroupTrees map[string]*GroupTree //子树群
-	Members    map[string]*Member    //成员
+	Name        string                 //名字
+	Path        string                 //路径
+	GroupTrees  map[string]*GroupTree  //子树群
+	Connections map[string]*Connection //连接
 }
 
 //NewGroupTree 创建一个GroupTree实例
 func NewGroupTree(name string, path string) *GroupTree {
 	return &GroupTree{
-		Name:       name,
-		Path:       path,
-		GroupTrees: make(map[string]*GroupTree),
-		Members:    make(map[string]*Member),
+		Name:        name,
+		Path:        path,
+		GroupTrees:  make(map[string]*GroupTree),
+		Connections: make(map[string]*Connection),
 	}
 }
 
-//RemoveMember 删除成员
-func (groupTree *GroupTree) RemoveMember(memberID string) {
-	if _, ok := groupTree.Members[memberID]; ok {
-		delete(groupTree.Members, memberID)
+//RemoveConnection 删除成员
+func (groupTree *GroupTree) RemoveConnection(connectionID string) {
+	if _, ok := groupTree.Connections[connectionID]; ok {
+		delete(groupTree.Connections, connectionID)
 	}
 }

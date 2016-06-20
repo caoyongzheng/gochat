@@ -34,29 +34,36 @@ func ReceiveMessageFromClient(connection *model.Connection) {
 			HandleConnectionOffLine(connection)
 			return
 		}
-		message.MemberInfo = connection.MemberInfo
+		message.Member = connection.Member
 		handleMessageFromClient(message, connection)
 	}
 }
 
 func handleMessageFromClient(message model.Message, connection *model.Connection) {
 	path := message.Path
+	dataName := message.DataName
 	switch message.Kind {
-	case model.Join:
-		group, err := global.GetAndAddGroupTree(path)
-		if err != nil {
-			connection.Send <- model.NewErrorMessage(path, message.DataName, err, global.System)
+	case model.Listen:
+		group, ok := global.ActiveGroups[path]
+		if !ok {
+			group = model.NewGroup(path)
+			global.AddGroup(group)
 		}
-		group.Connections[connection.ID] = connection
-		connection.GroupTrees[group.Path] = group
+		if dataName == "" {
+			connection.Send <- model.NewErrorMessage(path, dataName, "dataName should not be empty", global.System)
+		}
+		if connection.AddListen(group.Path, dataName) {
+			group.AddConnection(connection)
+		}
 	case model.Broadcast:
-		if groupTree, ok := connection.GroupTrees[path]; ok {
-			for _, m := range groupTree.Connections {
-				m.Send <- message
-			}
-		} else {
+		group, ok := global.ActiveGroups[path]
+		if !ok {
 			connection.Send <- model.NewErrorMessage(path, message.DataName, "path:"+path+"is not exist", global.System)
 		}
+		if dataName == "" {
+			connection.Send <- model.NewErrorMessage(path, dataName, "dataName should not be empty", global.System)
+		}
+		group.Broadcast(message)
 	default:
 		connection.Send <- model.NewErrorMessage(path, message.DataName, "Kind:"+message.Kind+"is unrecognized", global.System)
 	}
@@ -66,6 +73,15 @@ func handleMessageFromClient(message model.Message, connection *model.Connection
 func HandleConnectionOffLine(connection *model.Connection) {
 	defer global.Mu.Unlock()
 	global.Mu.Lock()
-	connection.OffLine()
-	log.Printf("Connection %s is offline", connection.ID)
+	id := connection.ID
+	for k := range connection.Listens {
+		if g, ok := global.ActiveGroups[k]; ok {
+			g.RemoveConnection(id)
+		}
+	}
+	if _, ok := global.ActiveConnections[id]; ok {
+		delete(global.ActiveConnections, id)
+	}
+	connection.CloseChans()
+	log.Printf("Connection %s is offline", id)
 }

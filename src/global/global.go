@@ -1,56 +1,37 @@
 package global
 
 import (
-	"fmt"
 	"model"
-	"strings"
 	"sync"
 )
 
 //Mu 锁
 var Mu sync.RWMutex
 
-//ActiveGroupTree 当前活动群
-var ActiveGroupTree *model.GroupTree
+//ActiveConnections 当前连接
+var ActiveConnections map[string]*model.Connection
+
+//ActiveGroups 当前活动群
+var ActiveGroups map[string]*model.Group
 
 //System 系统
-var System model.MemberInfo
+var System model.Member
 
 func init() {
-	ActiveGroupTree = model.NewGroupTree("system", "system")
-	System = model.MemberInfo{
-		ID: "SYSTEM",
-	}
+	ActiveConnections = make(map[string]*model.Connection)
+	ActiveGroups = make(map[string]*model.Group)
 }
 
-//GetAndAddGroupTree 获取groupTree
-func GetAndAddGroupTree(path string) (*model.GroupTree, error) {
-	pathItems := strings.Split(path, ".")
-	if pathItems[0] != "system" {
-		return nil, fmt.Errorf("root paths is wrong,expected system,but is %s", pathItems[0])
-	}
-	var group *model.GroupTree
-	group = ActiveGroupTree
-	for k, item := range pathItems {
-		if k == 0 {
-			continue
-		}
-		if group.GroupTrees == nil {
-			group.GroupTrees = make(map[string]*model.GroupTree)
-		}
-		if g, ok := group.GroupTrees[item]; ok {
-			group = g
-		} else {
-			group.GroupTrees[item] = model.NewGroupTree(item, path)
-			group = group.GroupTrees[item]
-		}
-	}
-	return group, nil
-}
-
-//AddConnection 添加新成员
-func AddConnection(connection *model.Connection) {
+//AddConnection 添加连接
+func AddConnection(c *model.Connection) {
 	defer Mu.Unlock()
 	Mu.Lock()
-	ActiveGroupTree.Connections[connection.ID] = connection
+	ActiveConnections[c.ID] = c
+}
+
+//AddGroup 添加群
+func AddGroup(g *model.Group) {
+	defer Mu.Unlock()
+	Mu.Lock()
+	ActiveGroups[g.Path] = g
 }

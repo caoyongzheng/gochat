@@ -5,8 +5,8 @@ const (
 	Error = "Error"
 	//Broadcast 广播
 	Broadcast = "Broadcast"
-	//Join 新增
-	Join = "Join"
+	//Listen 监听
+	Listen = "Listen"
 )
 
 //Message 消息

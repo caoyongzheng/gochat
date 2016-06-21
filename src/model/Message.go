@@ -5,6 +5,8 @@ const (
 	Error = "Error"
 	//Broadcast 广播
 	Broadcast = "Broadcast"
+	//Unicast 单播
+	Unicast = "Unicast"
 	//Listen 监听
 	Listen = "Listen"
 )
@@ -23,6 +25,28 @@ func NewErrorMessage(path string, dataName string, content interface{}, m Member
 	return Message{
 		Path:     path,
 		Kind:     Error,
+		DataName: dataName,
+		Content:  content,
+		Member:   m,
+	}
+}
+
+//NewUnicastMessage 创建一个单播消息
+func NewUnicastMessage(path string, dataName string, content interface{}, m Member) Message {
+	return Message{
+		Path:     path,
+		Kind:     Unicast,
+		DataName: dataName,
+		Content:  content,
+		Member:   m,
+	}
+}
+
+//NewBroadcastMessage 创建一个广播消息
+func NewBroadcastMessage(path string, dataName string, content interface{}, m Member) Message {
+	return Message{
+		Path:     path,
+		Kind:     Broadcast,
 		DataName: dataName,
 		Content:  content,
 		Member:   m,

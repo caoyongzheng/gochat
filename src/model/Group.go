@@ -4,6 +4,7 @@ package model
 type Group struct {
 	Path        string //路径
 	Connections map[string]*Connection
+	Data        map[string]interface{}
 }
 
 //NewGroup 创建一个Group实例
@@ -11,6 +12,7 @@ func NewGroup(path string) *Group {
 	return &Group{
 		Path:        path,
 		Connections: make(map[string]*Connection),
+		Data:        make(map[string]interface{}),
 	}
 }
 
@@ -18,14 +20,14 @@ func NewGroup(path string) *Group {
 func (g *Group) RemoveConnection(connectionID string) {
 	if _, ok := g.Connections[connectionID]; ok {
 		delete(g.Connections, connectionID)
-		g.broadcastMembers()
+		g.Data["Members"] = g.GetMembers()
 	}
 }
 
 //AddConnection 添加连接
 func (g *Group) AddConnection(c *Connection) {
 	g.Connections[c.ID] = c
-	g.broadcastMembers()
+	g.Data["Members"] = g.GetMembers()
 }
 
 //Broadcast 广播消息
@@ -40,14 +42,28 @@ func (g *Group) Broadcast(message Message) {
 }
 
 //BroadcastMembers 广播人员
-func (g *Group) broadcastMembers() {
+func (g *Group) BroadcastMembers() {
 	message := Message{
 		Path:     g.Path,
 		Kind:     Broadcast,
 		DataName: "Members",
-		Content:  g.GetMembers(),
+		Content:  g.Data["Members"],
 	}
 	g.Broadcast(message)
+}
+
+//BroadcastData 广播存储数据
+func (g *Group) BroadcastData(dataName string) {
+	if d, ok := g.Data[dataName]; ok {
+		g.Broadcast(NewBroadcastMessage(g.Path, dataName, d, Member{}))
+	}
+}
+
+//UnicastData 单播存储数据
+func (g *Group) UnicastData(connection *Connection, dataName string) {
+	if d, ok := g.Data[dataName]; ok {
+		connection.Send <- NewUnicastMessage(g.Path, dataName, d, connection.Member)
+	}
 }
 
 //GetMembers 获取所有连接

@@ -2,13 +2,20 @@ package model
 
 const (
 	//Error 错误
-	Error = "Error"
+	Error = iota
+	//Success 成功
+	Success
+)
+
+const (
 	//Broadcast 广播
 	Broadcast = "Broadcast"
 	//Unicast 单播
 	Unicast = "Unicast"
-	//Listen 监听
-	Listen = "Listen"
+	//Subscription 订阅
+	Subscription = "Subscription"
+	//ExitGroup 退出群
+	ExitGroup = "ExitGroup"
 )
 
 //Message 消息
@@ -17,21 +24,21 @@ type Message struct {
 	Kind     string      `json:"kind"`     //消息类型
 	DataName string      `json:"dataName"` //数据名称
 	Content  interface{} `json:"content"`  //消息类容
+	Status   int         `json:"status"`   //消息状态
 	Member
 }
 
 //NewErrorMessage 创建一个异常消息
-func NewErrorMessage(path string, dataName string, content interface{}, m Member) Message {
+func NewErrorMessage(path string, kind string, dataName string, content interface{}) Message {
 	return Message{
 		Path:     path,
-		Kind:     Error,
 		DataName: dataName,
 		Content:  content,
-		Member:   m,
+		Status:   Error,
 	}
 }
 
-//NewUnicastMessage 创建一个单播消息
+//NewUnicastMessage 创建一个类型单播消息
 func NewUnicastMessage(path string, dataName string, content interface{}, m Member) Message {
 	return Message{
 		Path:     path,
@@ -42,7 +49,7 @@ func NewUnicastMessage(path string, dataName string, content interface{}, m Memb
 	}
 }
 
-//NewBroadcastMessage 创建一个广播消息
+//NewBroadcastMessage 创建一个广播类型消息
 func NewBroadcastMessage(path string, dataName string, content interface{}, m Member) Message {
 	return Message{
 		Path:     path,
@@ -50,5 +57,15 @@ func NewBroadcastMessage(path string, dataName string, content interface{}, m Me
 		DataName: dataName,
 		Content:  content,
 		Member:   m,
+	}
+}
+
+//NewSuccessMessage 创建一个成功消息
+func NewSuccessMessage(path string, dataName string, content interface{}) Message {
+	return Message{
+		Path:     path,
+		DataName: dataName,
+		Content:  content,
+		Status:   Success,
 	}
 }

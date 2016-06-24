@@ -32,12 +32,9 @@ func (g *Group) AddConnection(c *Connection) {
 
 //Broadcast 广播消息
 func (g *Group) Broadcast(message Message) {
-	dataName := message.DataName
-	path := g.Path
+	message.Status = Success
 	for _, c := range g.Connections {
-		if c.IsListen(path, dataName) {
-			c.Send <- message
-		}
+		c.Send <- message
 	}
 }
 
@@ -56,13 +53,6 @@ func (g *Group) BroadcastMembers() {
 func (g *Group) BroadcastData(dataName string) {
 	if d, ok := g.Data[dataName]; ok {
 		g.Broadcast(NewBroadcastMessage(g.Path, dataName, d, Member{}))
-	}
-}
-
-//UnicastData 单播存储数据
-func (g *Group) UnicastData(connection *Connection, dataName string) {
-	if d, ok := g.Data[dataName]; ok {
-		connection.Send <- NewUnicastMessage(g.Path, dataName, d, connection.Member)
 	}
 }
 
